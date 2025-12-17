@@ -12,6 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
                 return;
             }
 
+            //ola
             const uri = editor.document.uri;
             const diagnostics = vscode.languages.getDiagnostics(uri);
 
