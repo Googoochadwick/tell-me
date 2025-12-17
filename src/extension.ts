@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-
+//test
 export function activate(context: vscode.ExtensionContext) {
 
     const disposable = vscode.commands.registerCommand(
