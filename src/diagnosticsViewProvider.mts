@@ -49,11 +49,12 @@ export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
         const fileName = path.basename(filePath);
 
         const result = await this.compileAndRun(filePath);
-        // Atharva and Pradeepto stuff
+        //Atharv Pradeepto stuff
         try {
             const response = await ai.models.generateContent({
                 model: "gemini-2.5-flash",
-                contents: `You are an educational programming tutor, not a code generator.
+                contents: `
+You are an educational programming tutor, not a code generator.
 
 Your goal is to help the user understand compiler errors, runtime behavior,
 and programming concepts WITHOUT providing full solutions or complete code.
@@ -116,7 +117,7 @@ ${result}
 
             let compileErrors = "";
 
-            compile.stderr.on("data", (d) => {
+            compile.stderr.on("data", d => {
                 compileErrors += d.toString();
             });
 
@@ -130,15 +131,10 @@ ${result}
 
                 let runtimeOutput = "";
 
-                run.stdout.on("data", (d) => {
-                    runtimeOutput += d.toString();
-                });
+                run.stdout.on("data", d => runtimeOutput += d.toString());
+                run.stderr.on("data", d => runtimeOutput += d.toString());
 
-                run.stderr.on("data", (d) => {
-                    runtimeOutput += d.toString();
-                });
-
-                run.on("close", (code) => {
+                run.on("close", code => {
                     resolve(
                         runtimeOutput.trim()
                             ? runtimeOutput
@@ -146,17 +142,19 @@ ${result}
                     );
                 });
 
-                run.on("error", (err) => {
+                run.on("error", err => {
                     resolve("Failed to execute program: " + err.message);
                 });
             });
 
-            compile.on("error", (err) => {
+            compile.on("error", err => {
                 resolve("Failed to start compiler: " + err.message);
             });
         });
     }
-    //Shrestha Stuff 
+
+    //Shrestha Stuff
+    /* ===== ONLY UI STYLING EDITED ===== */
     private getHtml(): string {
         return `
 <!DOCTYPE html>
@@ -164,38 +162,66 @@ ${result}
 <head>
 <meta charset="UTF-8" />
 <style>
+:root {
+    --bg: #0f1115;
+    --panel: #1b1f2a;
+    --border: #2a2f3a;
+    --text: #dcdfe4;
+    --accent: #3794ff;
+}
+
 body {
     font-family: system-ui;
-    padding: 12px;
-    background: #1e1e1e;
-    color: #ddd;
+    padding: 14px;
+    background: linear-gradient(180deg, #0f1115, #0c0e13);
+    color: var(--text);
 }
 
 button {
-    background: #3794ff;
+    width: 100%;
+    background: linear-gradient(135deg, #3794ff, #2563eb);
     color: white;
     border: none;
-    padding: 8px 12px;
+    border-radius: 10px;
+    padding: 10px 14px;
     cursor: pointer;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(55,148,255,0.35);
 }
 
 .output {
-    background: #252526;
-    padding: 12px;
-    border-left: 4px solid #3794ff;
-    min-height: 80px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 100px;
     white-space: pre-wrap;
-    transition: opacity 0.2s ease;
+    font-size: 13px;
+    line-height: 1.5;
+    animation: fadeUp 0.3s ease forwards;
 }
 
-/* Spinner styling */
+.output pre {
+    background: #0f1115;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
 .loading {
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 3px solid #ddd;
-    border-top: 3px solid #3794ff;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top: 3px solid var(--accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     vertical-align: middle;
@@ -203,17 +229,16 @@ button {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    to { transform: rotate(360deg); }
 }
 
-.output pre {
-    background: #1e1e1e;
-    padding: 8px;
-    overflow-x: auto;
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
+
 <body>
 
 <button id="run">Compile & Run</button>
@@ -226,17 +251,14 @@ button {
 const vscode = acquireVsCodeApi();
 const output = document.getElementById("output");
 
-// render initial content
-const initialContent = ${JSON.stringify(this.geminiOutput)}; //Atharva and Pradeepto stuff
+const initialContent = ${JSON.stringify(this.geminiOutput)}; //Atharv Pradeepto stuff
 if (typeof marked !== "undefined") {
     output.innerHTML = marked.parse(initialContent);
 } else {
     output.textContent = initialContent;
 }
 
-// handle button click
 document.getElementById("run").addEventListener("click", () => {
-    // show loading spinner immediately
     output.innerHTML = '<span class="loading"></span> Running...';
     vscode.postMessage({ command: "runCompiler" });
 });
