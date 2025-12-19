@@ -1,9 +1,119 @@
+import * as fs from 'fs';
+import * as path from "path";
+import { fileURLToPath } from 'url';
+import * as os from 'os';
 import * as vscode from 'vscode';
 import { GoogleGenAI } from "@google/genai";
 import { spawn } from "child_process";
-import * as path from "path";
+import dotenv from 'dotenv';
+
+// Define __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load .env from workspace root
+try {
+    const envPath = path.resolve(__dirname, '..', '.env');
+    if (fs.existsSync(envPath)) {
+        dotenv.config({ path: envPath });
+    }
+} catch (err) {
+    console.warn('Could not load .env file; using process.env:', err);
+}
 
 const ai = new GoogleGenAI({apiKey: "AIzaSyAKh12fGLGKYPxqemZNatD3e-HU41ZuVHw"});
+
+// Local Gemma model setup using Python
+async function loadGemmaModel(prompt: string): Promise<string> {
+    const modelPath = process.env.GEMMA_MODEL_DIR || path.join(__dirname, '..', 'functiongemma-270m-it');
+    
+    if (!fs.existsSync(modelPath)) {
+        throw new Error(`Model folder not found: ${modelPath}`);
+    }
+
+    // Find Python executable (venv or global)
+    let pythonExe = 'python';
+    const venvPath = process.env.PYTHON_VENV || path.join(__dirname, '..', '.venv');
+    
+    if (fs.existsSync(venvPath)) {
+        // Use venv Python if it exists
+        const venvPython = path.join(venvPath, 'Scripts', 'python.exe'); // Windows
+        if (fs.existsSync(venvPython)) {
+            pythonExe = venvPython;
+            console.log('Using venv Python:', pythonExe);
+        }
+    }
+
+    return new Promise((resolve, reject) => {
+        // Write prompt to temp file to avoid escaping issues
+        const tmpFile = path.join(os.tmpdir(), `prompt_${Date.now()}.txt`);
+        fs.writeFileSync(tmpFile, prompt, 'utf-8');
+
+        const pythonScript = `
+import sys
+from transformers import pipeline
+
+model_path = r'${modelPath.replace(/\\/g, '\\\\')}'
+with open(r'${tmpFile.replace(/\\/g, '\\\\')}', 'r', encoding='utf-8') as f:
+    prompt = f.read()
+
+try:
+    generator = pipeline('text-generation', model=model_path, device=-1)
+    output = generator(prompt, max_new_tokens=512, temperature=0.7, do_sample=True)
+    result = output[0]['generated_text']
+    print(result)
+except Exception as e:
+    print(f"ERROR: {str(e)}", file=sys.stderr)
+    sys.exit(1)
+finally:
+    import os
+    try:
+        os.remove(r'${tmpFile.replace(/\\/g, '\\\\')}')
+    except:
+        pass
+`;
+
+        const python = spawn(pythonExe, ['-c', pythonScript]);
+        let stdout = '';
+        let stderr = '';
+
+        python.stdout.on('data', (data) => {
+            stdout += data.toString();
+        });
+
+        python.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        python.on('close', (code) => {
+            // Clean up temp file if it still exists
+            try {
+                if (fs.existsSync(tmpFile)) {
+                    fs.unlinkSync(tmpFile);
+                }
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+
+            if (code === 0) {
+                resolve(stdout.trim());
+            } else {
+                reject(new Error(`Python error: ${stderr}`));
+            }
+        });
+
+        python.on('error', (err) => {
+            try {
+                if (fs.existsSync(tmpFile)) {
+                    fs.unlinkSync(tmpFile);
+                }
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+            reject(new Error(`Failed to spawn Python: ${err.message}`));
+        });
+    });
+}
 
 export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
 
@@ -49,11 +159,9 @@ export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
         const fileName = path.basename(filePath);
 
         const result = await this.compileAndRun(filePath);
-        //Atharv Pradeepto stuff
+        //Using local Gemma model via Python instead of Gemini API
         try {
-            const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
-                contents: `
+            const prompt = `
 You are an educational programming tutor, not a code generator.
 
 Your goal is to help the user understand compiler errors, runtime behavior,
@@ -85,12 +193,12 @@ If there are NO errors:
 
 Program output (verbatim, do not reinterpret):
 ${result}
-                `.trim()
-            });
+            `.trim();
 
-            this.geminiOutput = response.text ?? "No response from Gemini.";
+            const response = await loadGemmaModel(prompt);
+            this.geminiOutput = response.replace(prompt, '').trim() || response;
         } catch (err: any) {
-            this.geminiOutput = "Gemini error: " + (err?.message ?? String(err));
+            this.geminiOutput = "Local model error: " + (err?.message ?? String(err));
         }
 
         this.update();

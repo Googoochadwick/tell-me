@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { DiagnosticsViewProvider } from './diagnosticsViewProvider.mjs';
 
 export function activate(context: vscode.ExtensionContext) {
-    vscode.window.showInformationMessage('Tell-me extension ACTIVATED');
+    vscode.window.showInformationMessage('Tell-me extension ACTIVATED (using local Gemma model)');
 
     const provider = new DiagnosticsViewProvider(context);
 

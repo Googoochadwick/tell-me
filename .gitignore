@@ -3,3 +3,40 @@ dist
 node_modules
 .vscode-test/
 *.vsix
+# Environment variables (keep .env.example in repo)
+.env
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Gemma model files (too large for git)
+functiongemma-270m-it/
+*.zip
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+temp/
