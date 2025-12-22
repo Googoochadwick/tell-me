@@ -1,0 +1,7 @@
+node_modules
+out
+.git
+.venv
+*.log
+.env
+media/model

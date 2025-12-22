@@ -1,0 +1,21 @@
+{
+    "name": "Tell-me Dev Environment",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": ".."
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "ms-vscode.cpptools",
+                "ms-vscode.typescript-javascript-grammar"
+            ]
+        }
+    },
+    // Ensure the container has access to the local model folder
+    "mounts": [
+        "source=${localWorkspaceFolder}/media/model,target=/app/media/model,type=bind,consistency=cached"
+    ],
+    "remoteUser": "node"
+}

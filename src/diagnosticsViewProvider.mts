@@ -1,11 +1,16 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { spawn } from "child_process";
+import * as dotenv from "dotenv";
+import { pathToFileURL } from "url";
 
 
 
 // 🔥 Node-side transformers (THIS is the key fix)
 import { pipeline, env } from "@xenova/transformers";
+
+// Hardcode your absolute model folder here (must contain config.json and tokenizer.json)
+const MANUAL_MODEL_PATH = "C:/Users/palpr/Programming_Projects/Hackathon/VSCode-TheHelper/tell-me/media/model/";
 
 export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = "diagnosticsView";
@@ -15,10 +20,8 @@ export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
     private generator: any = null;
 
     constructor(private readonly context: vscode.ExtensionContext) {
-        // Force local-only models
-        env.allowLocalModels = true;
-        env.allowRemoteModels = false;
-        env.localModelPath = '';
+        // Load local .env to pick up model dir overrides
+        dotenv.config({ path: path.join(this.context.extensionPath, ".env") });
     }
 
     resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -42,47 +45,65 @@ export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
         this._view.webview.html = this.getHtml();
     }
 
-// ================= AI (NODE SIDE) =================
-private async loadModel() {
-    if (this.generator) return;
+    // ================= AI (NODE SIDE) =================
+    private async loadModel() {
+        if (this.generator) return;
 
-    const fs = await import("fs");
-    const modelPath = path.resolve(this.context.extensionPath, "media", "model");
-    console.log("Loading model from:", modelPath);
+        const fs = await import("fs");
+        const manualModel = MANUAL_MODEL_PATH.trim() || undefined;
+        const modelPath = manualModel
+            ? path.resolve(manualModel)
+            : path.resolve(this.context.extensionPath, "media", "model");
+        const modelUrl = pathToFileURL(modelPath).href;
+        console.log("Loading model from:", modelPath);
 
-    // Check if tokenizer.json exists
-    const tokenizerPath = path.join(modelPath, "tokenizer.json");
-    if (!fs.existsSync(tokenizerPath)) {
-        throw new Error(
-            `Local model error: tokenizer.json not found at ${tokenizerPath}`
-        );
+        // Check if tokenizer.json exists
+        const tokenizerPath = path.join(modelPath, "tokenizer.json");
+        if (!fs.existsSync(tokenizerPath)) {
+            throw new Error(
+                `Local model error: tokenizer.json not found at ${tokenizerPath}`
+            );
+        }
+
+        // Set the local model path to the directory containing the model
+        // and pass the basename to the pipeline. This avoids the leading slash issue.
+        const modelDir = path.dirname(modelPath);
+        const modelName = path.basename(modelPath);
+
+        env.localModelPath = modelDir;
+        env.allowLocalModels = true;
+        env.allowRemoteModels = false;
+
+        console.log("Setting env.localModelPath to:", modelDir);
+        console.log("Loading model:", modelName);
+
+        try {
+            this.generator = await pipeline("text2text-generation", modelName, {
+                local_files_only: true, // enforce offline/local usage
+            });
+            console.log("Local model loaded successfully.");
+        } catch (err: any) {
+            console.error("Error loading local model:", err);
+            throw err;
+        }
     }
 
-    try {
-        this.generator = await pipeline("text2text-generation", modelPath, {
-            local_files_only: true, // enforce offline/local usage
-        });
-        console.log("Local model loaded successfully.");
-    } catch (err: any) {
-        console.error("Error loading local model:", err);
-        throw err;
+    private async analyzeWithModel(prompt: string): Promise<string> {
+        try {
+            await this.loadModel();
+
+            const out = await this.generator(prompt, {
+                max_new_tokens: 1024,
+                repetition_penalty: 1.2,
+                num_beams: 1, // Keep it simple for local speed, but could increase for quality
+            });
+
+            return out[0].generated_text;
+        } catch (err: any) {
+            console.error("Error during model inference:", err);
+            throw new Error("Failed to run local model: " + err.message);
+        }
     }
-}
-
-private async analyzeWithModel(prompt: string): Promise<string> {
-    try {
-        await this.loadModel();
-
-        const out = await this.generator(prompt, {
-            max_new_tokens: 256,
-        });
-
-        return out[0].generated_text;
-    } catch (err: any) {
-        console.error("Error during model inference:", err);
-        throw new Error("Failed to run local model: " + err.message);
-    }
-}
 
 
     // ================= ANALYSIS =================
@@ -98,17 +119,45 @@ private async analyzeWithModel(prompt: string): Promise<string> {
         const fileName = path.basename(filePath);
         const result = await this.compileAndRun(filePath);
 
+        const code = editor.document.getText();
         const prompt = `
-You are an educational programming tutor.
+[SYSTEM]
+You are a simple programming tutor. 
+Use the TEMPLATE below to explain the error in the CODE based on the OUTPUT.
+Keep it simple for beginners. No jargon.
 
-Explain compiler errors and runtime behavior.
-Do NOT provide full corrected programs.
+[CODE]
+${code}
 
-File: ${fileName}
-
-Program output:
+[OUTPUT]
 ${result}
-        `.trim();
+
+[TEMPLATE]
+✅ LLM Error Explanation (Universal)
+
+🟥 Error Overview
+Error Message: 
+Language/Tool: ${path.extname(fileName).slice(1) || "Unknown"}
+
+📍 Where the Error Occurs
+File: ${fileName}
+Line: 
+Code Context: 
+
+🧠 What the Error Means
+(Explain simply)
+
+❌ Problematic Code
+(Copy the bad line)
+
+✅ Corrected Code
+(Provide fixed line)
+
+📌 Rule to Remember
+(One short rule)
+
+Detailed Explanation:
+`.trim();
 
         try {
             this.outputText = await this.analyzeWithModel(prompt);
