@@ -1,23 +1,24 @@
 # Tell-Me Extension Setup Guide
 
-This guide walks you through setting up the Tell-Me extension to use the local Gemma 270M model instead of the Gemini API.
+This guide walks you through setting up the Tell-Me extension to use the local T5-Small model instead of the Gemini API.
 
 ## Prerequisites
 
-- Python 3.8+ installed and in PATH
 - Node.js and npm installed
 - Hugging Face account (free)
-- Google Colab access
+- Google Colab access (if you want to re-download or fine-tune)
 
 ---
 
-## Step 1: Download Gemma 270M Model from Colab
+## Step 1: Download T5-Small Model
 
-The extension uses the `google/functiongemma-270m-it` model locally. You'll need to download it from Google Colab first.
+The extension uses the `google-t5/t5-small` model locally. You can download it directly or use Colab.
 
-### 1.1 Open the Colab Notebook
+### 1.1 Download via Transformers.js
+The easiest way is to let the extension download it once, or download it manually from Hugging Face.
 
-A Colab notebook is included in this project: `Gemma_Transformers_Example.ipynb`
+### 1.2 Using the Included Notebook
+A notebook is included in this project: `Gemma_Transformers_Example.ipynb` (can be used for T5 as well).
 
 You can also open it directly from Colab:
 - Go to [Google Colab](https://colab.research.google.com)
@@ -282,11 +283,11 @@ tell-me/
 │   │   ├── python.exe
 │   │   └── ...
 │   └── Lib/
-├── functiongemma-270m-it/          ← Gemma model (from Colab)
+├── media/model/                    ← T5-Small model
 │   ├── config.json
 │   ├── model.safetensors
 │   ├── tokenizer.json
-│   ├── tokenizer.model
+│   ├── spiece.model
 │   ├── tokenizer_config.json
 │   └── ...
 ├── src/

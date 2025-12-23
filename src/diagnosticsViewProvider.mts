@@ -9,8 +9,9 @@ import { pathToFileURL } from "url";
 // 🔥 Node-side transformers (THIS is the key fix)
 import { pipeline, env } from "@xenova/transformers";
 
-// Hardcode your absolute model folder here (must contain config.json and tokenizer.json)
-const MANUAL_MODEL_PATH = "C:/Users/palpr/Programming_Projects/Hackathon/VSCode-TheHelper/tell-me/media/model/";
+// Optional: set to an absolute model folder (must contain config.json, tokenizer.json, and onnx/ encoder/decoder files)
+// Point to the model root (not the onnx subfolder); pipeline expects onnx files inside a nested onnx/ folder
+const MANUAL_MODEL_PATH = "C:/Users/palpr/Programming_Projects/Hackathon/VSCode-TheHelper/tell-me/media/model";
 
 export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = "diagnosticsView";
@@ -55,14 +56,32 @@ export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
             ? path.resolve(manualModel)
             : path.resolve(this.context.extensionPath, "media", "model");
         const modelUrl = pathToFileURL(modelPath).href;
-        console.log("Loading model from:", modelPath);
+        console.log("[model] resolved modelPath:", modelPath);
 
-        // Check if tokenizer.json exists
         const tokenizerPath = path.join(modelPath, "tokenizer.json");
+        const configPath = path.join(modelPath, "config.json");
+        const onnxDir = path.join(modelPath, "onnx");
+        const encoderPath = path.join(onnxDir, "encoder_model_quantized.onnx");
+        const decoderPath = path.join(onnxDir, "decoder_with_past_model_quantized.onnx");
+
+        console.log("[model] checking files:", {
+            configPath,
+            tokenizerPath,
+            encoderPath,
+            decoderPath,
+        });
+
+        if (!fs.existsSync(configPath)) {
+            throw new Error(`Local model error: config.json not found at ${configPath}`);
+        }
         if (!fs.existsSync(tokenizerPath)) {
-            throw new Error(
-                `Local model error: tokenizer.json not found at ${tokenizerPath}`
-            );
+            throw new Error(`Local model error: tokenizer.json not found at ${tokenizerPath}`);
+        }
+        if (!fs.existsSync(encoderPath)) {
+            throw new Error(`Local model error: encoder_model_quantized.onnx not found at ${encoderPath}`);
+        }
+        if (!fs.existsSync(decoderPath)) {
+            throw new Error(`Local model error: decoder_with_past_model_quantized.onnx not found at ${decoderPath}`);
         }
 
         // Set the local model path to the directory containing the model
@@ -74,8 +93,9 @@ export class DiagnosticsViewProvider implements vscode.WebviewViewProvider {
         env.allowLocalModels = true;
         env.allowRemoteModels = false;
 
-        console.log("Setting env.localModelPath to:", modelDir);
-        console.log("Loading model:", modelName);
+        console.log("[model] env.localModelPath:", modelDir);
+        console.log("[model] modelName:", modelName);
+        console.log("[model] modelUrl:", modelUrl);
 
         try {
             this.generator = await pipeline("text2text-generation", modelName, {

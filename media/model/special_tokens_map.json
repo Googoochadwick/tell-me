@@ -101,7 +101,25 @@
     "<extra_id_98>",
     "<extra_id_99>"
   ],
-  "eos_token": "</s>",
-  "pad_token": "<pad>",
-  "unk_token": "<unk>"
+  "eos_token": {
+    "content": "</s>",
+    "lstrip": false,
+    "normalized": false,
+    "rstrip": false,
+    "single_word": false
+  },
+  "pad_token": {
+    "content": "<pad>",
+    "lstrip": false,
+    "normalized": false,
+    "rstrip": false,
+    "single_word": false
+  },
+  "unk_token": {
+    "content": "<unk>",
+    "lstrip": false,
+    "normalized": false,
+    "rstrip": false,
+    "single_word": false
+  }
 }
