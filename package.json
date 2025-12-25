@@ -17,11 +17,11 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-  {
-    "command": "tellMe.runCompiler",
-    "title": "Tell Me: Analyze Compiler Errors"
-  }
-],
+      {
+        "command": "tellMe.runCompiler",
+        "title": "Tell Me: Analyze Compiler Errors"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -40,6 +40,17 @@
           "type": "webview"
         }
       ]
+    },
+    "configuration": {
+      "title": "Tell-me",
+      "properties": {
+        "geminiApiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Google Gemini API key for AI-powered diagnostics",
+          "markdownDescription": "Enter your Google Gemini API key. Get one from [Google AI Studio](https://aistudio.google.com/app/apikey)"
+        }
+      }
     }
   },
   "scripts": {
