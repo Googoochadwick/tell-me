@@ -1,9 +1,13 @@
 {
   "name": "tell-me",
-  "displayName": "Tell-me",
-  "description": "Tells and teaches users coding concepts based on compiler and language diagnostics",
-  "version": "0.0.1",
-  "publisher": "your-name",
+  "displayName": "Tell-me, Learning Assistant",
+  "description": "Tells and teaches users coding concepts based on compiler and language diagnostics currently for C and C++",
+  "version": "1.0.0",
+  "publisher": "Tell-me",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Googoochadwick/tell-me"
+  },
   "type": "module",
   "engines": {
     "vscode": "^1.107.0"
@@ -72,6 +76,7 @@
     "typescript-eslint": "^8.48.1"
   },
   "dependencies": {
-    "@google/genai": "^1.34.0"
+    "@google/genai": "^1.34.0",
+    "@modelcontextprotocol/sdk": "^1.25.1"
   }
 }

@@ -1,71 +1,98 @@
-# tell-me README
+# Tell-me - AI-Powered C/C++ Learning Assistant 🚀
 
-This is the README for your extension "tell-me". After writing up a brief description, we recommend including the following sections.
+An educational VS Code extension that uses Google Gemini AI to help you understand compiler errors and improve your C/C++ programming skills.
 
-## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## ✨ Features
 
-For example if there is an image subfolder under your extension project workspace:
+- 🔍 **Compile & Analyze**: Instantly compile C/C++ code and get AI-powered explanations
+- 🤖 **Educational AI**: Get hints and guidance without spoiling the solution
+- 💬 **Interactive Q&A**: Ask follow-up questions to deepen your understanding
+- 📝 **Beautiful Interface**: Easy-to-read markdown formatting with syntax highlighting
+- 📋 **Quick Copy**: Click any code block to copy to clipboard
+- 🎯 **Context-Aware**: AI considers your file size, language, and error patterns
 
-\!\[feature X\]\(images/feature-x.png\)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## 📦 Installation
 
-## Requirements
+1. Install from the VS Code Marketplace
+2. Get a free Google Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+3. Open VS Code Settings (Ctrl+, or Cmd+,)
+4. Search for "gemini"
+5. Enter your API key
+6. Or open extension and add it from there
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## 🚀 Usage
 
-## Extension Settings
+1. Open any `.c` or `.cpp` file
+2. Click the Tell-me icon in the sidebar (📝)
+3. Click "Compile & Run"
+4. Read the AI analysis and ask follow-up questions!
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## ⚙️ Requirements
 
-For example:
+- **GCC** or **G++** compiler installed on your system
+- **Google Gemini API key** (free at [Google AI Studio](https://aistudio.google.com/app/apikey))
+
+### Installing GCC/G++
+
+**Windows:**
+```bash
+# Install MinGW or use WSL
+```
+
+**macOS:**
+```bash
+xcode-select --install
+```
+
+**Linux:**
+```bash
+sudo apt install gcc g++  # Ubuntu/Debian
+sudo dnf install gcc g++  # Fedora
+```
+
+## 📖 How It Works
+
+Tell-me analyzes your code in a educational way:
+
+1. **🎯 Quick Summary** - What happened in one sentence
+2. **🔍 What's Happening** - Plain English explanation
+3. **💡 Key Concepts** - Programming concepts involved
+4. **🛠️ Hints to Fix** - Actionable guidance without solutions
+5. **✅ What You're Doing Right** - Positive reinforcement
+
+## 🎓 Perfect For
+
+- Students learning C/C++ programming
+- Self-taught programmers
+- Anyone who wants to understand their errors better
+- Teachers looking for automated feedback tools
+
+## ⚙️ Extension Settings
 
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `geminiApiKey`: Your Google Gemini API key for AI-powered diagnostics
 
-## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## 📝 Release Notes
 
-## Release Notes
+### 1.0.0 (Initial Release)
 
-Users appreciate release notes as you update your extension.
+- ✅ Compile and run C/C++ files
+- ✅ AI-powered error analysis with Google Gemini
+- ✅ Interactive follow-up questions
+- ✅ Beautiful markdown-formatted responses
+- ✅ Click-to-copy code blocks
+- ✅ Educational hints without giving away solutions
 
-### 1.0.0
 
-Initial release of ...
+## 🙏 Acknowledgments
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+- Powered by [Google Gemini AI](https://ai.google.dev/)
+- Built with ❤️ for programming students
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**Enjoy learning C/C++ with Tell-me!** 🎉
