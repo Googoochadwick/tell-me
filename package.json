@@ -2,7 +2,7 @@
   "name": "tell-me",
   "displayName": "Tell-me, Learning Assistant",
   "description": "Tells and teaches users coding concepts based on compiler and language diagnostics currently for C and C++",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "Tell-me",
   "repository": {
     "type": "git",
@@ -13,7 +13,26 @@
     "vscode": "^1.107.0"
   },
   "categories": [
+    "Machine Learning",
+    "Education",
     "Other"
+  ],
+  "icon": "media/img.jpg",
+
+
+  "keywords": [
+    "c",
+    "c++",
+    "cpp",
+    "compiler",
+    "education",
+    "learning",
+    "ai",
+    "gemini",
+    "diagnostics",
+    "debugging",
+    "student",
+    "tutorial"
   ],
   "activationEvents": [
     "onView:diagnosticsView"
