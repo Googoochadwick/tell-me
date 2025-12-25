@@ -96,3 +96,10 @@ This extension contributes the following settings:
 ---
 
 **Enjoy learning C/C++ with Tell-me!** 🎉
+
+---
+Made by:
+<a href="https://github.com/Googoochadwick" target="_blank">Arush Anand Singh</a>,
+<a href="https://github.com/shresalix2006" target="_blank">Shrestha Chatterjee</a>,
+<a href="https://github.com/PerseusKyogre09" target="_blank">Pradeepto Pal</a>,
+<a href="https://github.com/ARTLEST" target="_blank">Atharva Kumar</a>
